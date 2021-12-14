@@ -43,15 +43,15 @@ aware<-read.xlsx("~/GitHub/dd_forecast/files/AWARE_country_regions_Improved.xlsx
 CI<-read.xlsx("~/GitHub/dd_forecast/files/connectivity_index_pnas.xlsx", sheetIndex=1)
 
 #Byers et al. 2019 A Global Database of Power Plants (https://datasets.wri.org/dataset/globalpowerplantdatabase)
-powerplants<-read.csv("~/GitHub/dd_forecast/files/global_power_plant_database.csv")
+powerplants<-read.csv("~/GitHub/dd_forecast/files/globalpowerplantdatabasev120/global_power_plant_database.csv")
 powerplants<-SpatialPointsDataFrame(data.frame(x=powerplants$longitude, y=powerplants$latitude),powerplants,proj4string = CRS("+proj=longlat +datum=WGS84"))
 
 #Mulligan et al. 2020 GOODD, a global dataset of more than 38,000 georeferenced dams doi:10.1038/s41597-020-0362-5
-dams<-shapefile("~/GitHub/dd_forecast/files/GOOD2_dams.shp")
+dams<-shapefile("~/GitHub/dd_forecast/files/GOODD_data/Data/GOOD2_dams.shp")
 dams<-spTransform(dams,CRS("+proj=longlat +datum=WGS84"))
 
 #Human development index (http://hdr.undp.org/sites/default/files/2020_statistical_annex_all.xlsx)
-hdi<-read_xlsx("~/GitHub/dd_forecast/files/2020_statistical_annex_all.xlsx", sheet = 3, skip=4, n_max = 200)
+hdi<-read_xlsx("~/GitHub/dd_forecast/files/HDI/2020_statistical_annex_all.xlsx", sheet = 3, skip=4, n_max = 200)
 hdi<-hdi[c(2,seq(3,27,2))]
 names(hdi)[2:length(hdi)]<-paste("X",names(hdi)[2:length(hdi)],sep="")
 names(hdi)[2:length(hdi)]<-gsub(names(hdi)[2:length(hdi)],pattern = "-",replacement = ".")
@@ -59,12 +59,12 @@ hdi[2:14]<-lapply(hdi[2:14],as.numeric)
 hdi<-hdi[which(hdi$Country != toupper(hdi$Country)),]
 
 #Corruption Perceptions Index 2020 (https://images.transparencycdn.org/images/CPI_FULL_DATA_2021-01-27-162209.zip)
-cpi<-read_xlsx("~/GitHub/dd_forecast/files/CPI2020_GlobalTablesTS_210125.xlsx", sheet = 2, skip=2)
+cpi<-read_xlsx("~/GitHub/dd_forecast/files/CPI/CPI2020_GlobalTablesTS_210125.xlsx", sheet = 2, skip=2)
 cpi<-cpi[c(1,4)]
 names(cpi)[2]<-gsub(names(cpi)[2], pattern=" ", replacement = ".")
 
 #Early et al. 2016 Global threats from invasive alien species in the twenty-first century and national response capacities (doi:10.1038/ncomms12485)
-cpd<-read_xlsx("~/GitHub/dd_forecast/files/CBDreport_summary_english_spanish_french.xlsx", sheet = 1)
+cpd<-read_xlsx("~/GitHub/dd_forecast/files/CBD/CBDreport_summary_english_spanish_french.xlsx", sheet = 1)
 cpd<-cpd[c(1,11,12)]
 cpd<-na.exclude(cpd)
 
