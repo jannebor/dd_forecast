@@ -15,6 +15,9 @@ df_ml1_h2o<-as.h2o(df_ml1)
 preds <- h2o.predict(classifier, df_ml1_h2o)
 preds <- cbind(df_ml1[c(2,7,16:25,3211:3214)], as.data.frame(preds))
 
+#save(preds, file="dataframes/preds_dd")
+load(file="dataframes/preds_dd")
+
 # check for re-evaluated data-deficient species
 library(rredlist)
 iucn_key_n <- "..."
