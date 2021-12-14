@@ -13,8 +13,7 @@ test_mar_h2o<-as.h2o(test_mar)
 test_terr_h2o<-as.h2o(test_terr)
 
 # import best performing model
-classifier <- h2o.import_mojo("~/GitHub/dd_forecast/classifier/Partition1/StackedEnsemble.zip")
-
+classifier <- h2o.import_mojo("https://github.com/jannebor/dd_forecast/raw/main/classifier/Partition1/StackedEnsemble.zip")
 performance <- h2o.performance(classifier, newdata = test_df_h2o)
 performance_mar <- h2o.performance(classifier, newdata = test_mar_h2o)
 performance_terr <- h2o.performance(classifier, newdata = test_terr_h2o)

@@ -7,7 +7,7 @@ df_ml1<-subset(df_ml1, df_ml1$category=="DD")
 h2o.init(nthreads=4, max_mem_size="30g")
 
 # import best performing model
-classifier <- h2o.import_mojo("~/GitHub/dd_forecast/classifier/Partition1/StackedEnsemble.zip")
+classifier <- h2o.import_mojo("https://github.com/jannebor/dd_forecast/raw/main/classifier/Partition1/StackedEnsemble.zip")
 
 # create frame for generating predictions
 df_ml1_h2o<-as.h2o(df_ml1)
