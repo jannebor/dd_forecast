@@ -4,7 +4,7 @@ Numerous species of the IUCN Red List of Threatened Species are classified as da
 
 Code for reproducing the results can be found in the folder workflow.
 
-The generated predictions are stored in [dd_predictions.csv](https://github.com/jannebor/dd_forecast/raw/main/dd_predictions.csv).
+The generated predictions are stored in [dd_predictions.csv](https://github.com/jannebor/dd_forecast/blob/main/dd_predictions.csv) and show the probability of being threatened by extinction for each species:
 
 
 
