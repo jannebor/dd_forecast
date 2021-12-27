@@ -2,6 +2,8 @@
 
 Numerous species of the IUCN Red List of Threatened Species are classified as data-deficient. The provided code was used to predict threat intensities across data-deficient species of all spatial data available from [IUCN](https://www.iucnredlist.org/resources/spatial-data-download).
 
+The classifier can be applied for individual species on  [https://ml-extinctionrisk.indecol.no/](https://ml-extinctionrisk.indecol.no/).
+
 Code for reproducing the results can be found in the folder workflow.
 
 The generated predictions are stored in [dd_predictions.csv](https://github.com/jannebor/dd_forecast/blob/main/dd_predictions.csv) and show the probability of being threatened by extinction for each species:
