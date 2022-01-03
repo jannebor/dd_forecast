@@ -44,4 +44,4 @@ for (f in 1:length(files)){
 
 }
 
-save(predictors_stack, file="~/GitHub/dd_forecast/files/predictors_stack")
+writeRaster(predictors_stack,"~/GitHub/dd_forecast/files/raster/predictors_stack.grd", format="raster")

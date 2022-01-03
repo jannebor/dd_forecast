@@ -33,7 +33,7 @@ occ_cell_fishnet <- rasterToPolygons(occ_cell_fishnet)
 
 ## load raster stack: environmental stressors
 # raster stack: created in mapping_raster_stack.R
-load("~/GitHub/dd_forecast/files/predictors_stack")
+predictors_stack<-stack("~/GitHub/dd_forecast/files/raster/predictors_stack.grd")
 
 #### the following data needs to be downloaded individually from the indicated sources:
 #Boulay et al. 2018 The WULCA consensus characterization model for water scarcity footprints: assessing impacts of water consumption based on available water remaining (AWARE) doi:10.1007/s11367-017-1333-8
