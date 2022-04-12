@@ -56,7 +56,7 @@ Performance metrics were calculated based on the testing data and reclassified D
 
 Permutation variable importance was assessed
 
-![Range map examples - Maxent predictions transformed into potential binary range maps at different levels of confidence using different cut-off thresholds](files/ext_data_fig8.png)
+![Permutation variable importance](figs/ext_data_fig8.png)
 
 ## Predictions
 
