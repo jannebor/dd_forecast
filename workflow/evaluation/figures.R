@@ -1074,7 +1074,7 @@ par(mfrow=c(1,1))
 ##########################################################################
 
 
-
+dd_threatened<-mar_dd_threatened+terr_dd_threatened
 
 #extended data figure 4:
 #################################
@@ -1087,8 +1087,8 @@ darkcols1<-inferno(10)[1:10]
 colfunc1<-colorRampPalette(darkcols1, bias=2)
 
 # plot and save
-pngfile <- "C:/Users/janbor/Desktop/OneDrive - NTNU/ThreatLevelSubmission/figures/ext_data_fig4.png"
-png(pngfile, width=16, height=11, units = "cm", res=900)
+pngfile <- "C:/Users/janbor/Desktop/OneDrive - NTNU/ThreatLevelSubmission/figures/ext_data_fig4_trp.png"
+png(pngfile, width=16, height=11, units = "cm", res=900, bg = "transparent")
 
 opar<-par()
 par(mfrow=c(1,1))
@@ -1099,7 +1099,7 @@ plot(bb_poly_proj, col="gray20", bor="black", lwd=0.5)
 plot((sst_rob), col=colfunc1(512), legend=F, add=TRUE, axes=F)
 plot((sst_rob), legend.only=TRUE, col=colfunc1(512), legend.width=1, legend.shrink=0.75,
      horizontal=TRUE, smallplot=c(0.1,0.9, 0.13,0.15), par(mar = par("mar")),
-     axis.args=list(cex.axis=0.8))
+     axis.args=list(cex.axis=0.8, col.ticks="gray50",col.axis="gray50"))
 plot(grat30_lines_proj_ocean, col="gray40",add=T, lwd=0.4)
 #plot(admin0_poly_proj, col="gray15", bor="gray20", lwd=0.4, add=TRUE)
 #plot(lrglakes_poly_proj, col=cividis(9, alpha = 0.25)[5], bor=cividis(9, alpha = 0.3)[5], lwd=0.5, add=TRUE)
@@ -1107,7 +1107,7 @@ plot(grat30_lines_proj_ocean, col="gray40",add=T, lwd=0.4)
 plot(admin0_lines_proj, col="gray20", lwd=0.4, add=TRUE)
 plot(coast_lines_proj, col="gray50", lwd=0.5, add=TRUE)
 plot(bb_lines_proj, col="black", lwd=1.0, add=TRUE)
-mtext("Number of Data Deficient species predicted to be threatened by extinction", side=1, adj = 0.1, padj = -3, cex=0.8)
+mtext("Number of Data Deficient species predicted to be threatened by extinction", col="gray50", side=1, adj = 0.1, padj = -3, cex=0.8)
 par(mfrow=c(1,1))
 
 par(opar)

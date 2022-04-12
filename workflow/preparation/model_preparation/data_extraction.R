@@ -13,8 +13,6 @@ library(fasterize)
 library(exactextractr)
 
 ### create functions
-
-
 # requires IUCN API access
 if(!exists("iucn_key_n")){
   if(file.exists("~/GitHub/dd_forecast/files/iucn_key_n")){
@@ -23,8 +21,6 @@ if(!exists("iucn_key_n")){
     iucn_key_n <- rstudioapi::askForPassword("iucn_key_n")
   }
 }
-
-
 
 iucn_native_country <-function(species, iucn_key_n){
   #iucn countries

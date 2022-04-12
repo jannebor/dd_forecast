@@ -1,4 +1,4 @@
-prmi_plot <- function(prmi, num_of_features) {
+prmi_plot <- function(prmi, num_of_features, col) {
   
   vi <- as.data.frame(prmi)
   
@@ -21,9 +21,9 @@ prmi_plot <- function(prmi, num_of_features) {
     on.exit(par(op))
     
     graphics::boxplot(t(vi[, -1]), names = vi$Variable, horizontal = TRUE, col = "white", yaxt = "n", main = title,
-                      xlab = "Permutation Variable Importance", axes = FALSE)
-    graphics::axis(1)
-    graphics::axis(2, at = seq_along(vi$Variable), labels = vi$Variable, las = 2, lwd = 0)
+                      xlab = "Permutation Variable Importance", border=col, col.lab = col, axes = FALSE)
+    graphics::axis(1, col.ticks = col, col=col, col.axis=col)
+    graphics::axis(2, at = seq_along(vi$Variable), col.axis=col,labels = vi$Variable, las = 2, lwd = 0)
   } else {
     # if num_of_features = 1, create only one bar (adjust size to look nice)
     if (num_of_features == 1) {
@@ -68,7 +68,7 @@ prmi<-h2o.permutation_importance(classifier, test_df_h2o, n_repeats = 50)
 #save(prmi,file="/classifier/v2/Partition1/prmi50r")
 load(file="classifier/v2/Partition1/prmi50r")
 
-prmi_plot(prmi, num_of_features = 25)
+prmi_plot(prmi, num_of_features = 25, col="gray50")
 
 # translate variable names
 prmi$Variable[1]<-"Taxonomic class"
@@ -98,11 +98,11 @@ prmi$Variable[50]<-"PA fraction (Max. across range)"
 prmi$Variable[36]<-"DDF (Median across range)"
 
 #save figure
-pngfile <- "C:/Users/janbor/Desktop/OneDrive - NTNU/ThreatLevelSubmission/figures/ext_data_fig8.png"
-png(pngfile, width=16*1.5, height=15*1.5, units = "cm", res=900)
+pngfile <- "C:/Users/janbor/Desktop/OneDrive - NTNU/ThreatLevelSubmission/figures/ext_data_fig8_trp.png"
+png(pngfile, width=16*1.5, height=15*1.5, units = "cm", res=900, bg="transparent")
 par(mar=c(0,0,0,0))
 par(mfrow=c(1,1))
-prmi_plot(prmi, num_of_features = 25)
+prmi_plot(prmi, num_of_features = 15, col="gray50")
 dev.off()
 par(mfrow=c(1,1))
 
