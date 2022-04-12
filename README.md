@@ -1,4 +1,4 @@
-## Extinction Risk of Data Deficient species
+## Extinction Risk of Data Deficient Species
 
 Numerous species of the IUCN Red List of Threatened Species are classified as [Data Deficient](https://www.iucnredlist.org/search?permalink=2ed13c01-7e0e-4596-a100-38ed47d30a99). This code was used to predict probabilities of being threatened by extinction for Data Deficient species containing range map data available from the IUCN [spatial data download](https://www.iucnredlist.org/resources/spatial-data-download). The classifier can be applied for individual species using our [web application](https://ml-extinctionrisk.indecol.no/) (alpha version). ![Number of threatened DD species](figs/ext_data_fig4_trp.png)
 
@@ -34,7 +34,7 @@ Scripts for data pre-processing, e.g., calculating land-use fractions, etc. is s
 
 Training (75%) and testing (25%) data was [prepared](https://github.com/jannebor/dd_forecast/blob/main/workflow/1_Preparation/model_preparation/3_model_prep.R) for each partition (partition 1: all species, partition 2: marine & non-marine species separately) and relevant [features selected](https://github.com/jannebor/dd_forecast/blob/main/workflow/1_Preparation/model_preparation/3.1_feature_selection.R) using the Boruta algorithm [Kursa & Rudnicki 2010](https://doi.org/10.18637/jss.v036.i11).
 
-## Model training
+## Model building
 
 In total 510 models were fitted using [AutoML](https://docs.h2o.ai/h2o/latest-stable/h2o-docs/automl.html) in H2O. 222 models were fitted using all species ([partition 1](https://github.com/jannebor/dd_forecast/blob/main/workflow/2_Training/model_partition1.R)), 134 using only marine species and 154 using only non-marine species ([partition 2](https://github.com/jannebor/dd_forecast/blob/main/workflow/2_Training/model_partition2.R)).
 
