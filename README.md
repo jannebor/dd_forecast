@@ -26,21 +26,21 @@ Numerous species of the IUCN Red List of Threatened Species are classified as [D
 -   Human Impacts on Marine Ecosystems ([Halpern et al. 2008](https://doi.org/10.1126/science.1149345))
 -   World Database on Protected Areas ([UNEP-WCMC & IUCN 2021](www.protectedplanet.net))
 
-Scripts for data pre-processing, e.g., calculating land-use fractions, etc., and stacking all spatial layers are stored in [raster_preparation](https://github.com/jannebor/dd_forecast/tree/main/workflow/1_Preparation/raster_preparation)
+Scripts for data pre-processing, e.g., calculating land-use fractions, etc., and stacking all spatial layers are stored in [workflow/preparation/raster_preparation](https://github.com/jannebor/dd_forecast/tree/main/workflow/preparation/raster_preparation)
 
 ## Model preparation
 
-The underlying function for retrieving predictor data from tables, web sources (i.e., IUCN, GBIF & OBIS), and the above downloaded spatial datasets for single species is [data_extraction.R](https://github.com/jannebor/dd_forecast/blob/main/workflow/1_Preparation/model_preparation/data_extraction.R). We applied this function for entire spatial datasets in [data_extraction_batch.R](https://github.com/jannebor/dd_forecast/blob/main/workflow/1_Preparation/model_preparation/2_data_extraction_batch.R).
+The underlying function for retrieving predictor data from tables, web sources (i.e., IUCN, GBIF & OBIS), and the above downloaded spatial datasets for single species is [data_extraction.R](https://github.com/jannebor/dd_forecast/blob/main/workflow/preparation/model_preparation/data_extraction.R). We applied this function for entire spatial datasets in [data_extraction_batch.R](https://github.com/jannebor/dd_forecast/blob/main/workflow/preparation/model_preparation/data_extraction_batch.R).
 
 The resulting full dataframe (df_ml) is stored as R object in [dataframes/full_data](https://github.com/jannebor/dd_forecast/tree/main/dataframes/full_data).
 
-Training (75%) and testing (25%) data was [prepared](https://github.com/jannebor/dd_forecast/blob/main/workflow/1_Preparation/model_preparation/3_model_prep.R) for each partition (partition 1: all species, partition 2: marine & non-marine species separately) and stored as R objects in [dataframes/Partition 1](https://github.com/jannebor/dd_forecast/tree/main/dataframes/Partition1) and [dataframes/Partition 2](https://github.com/jannebor/dd_forecast/tree/main/dataframes/Partition2).
+Training (75%) and testing (25%) data was [prepared](https://github.com/jannebor/dd_forecast/blob/main/workflow/preparation/model_preparation/model_prep.R) for each partition (partition 1: all species, partition 2: marine & non-marine species separately) and stored as R objects in [dataframes/Partition 1](https://github.com/jannebor/dd_forecast/tree/main/dataframes/Partition1) and [dataframes/Partition 2](https://github.com/jannebor/dd_forecast/tree/main/dataframes/Partition2).
 
-For each of the partition-specific dataframes features were [selected](https://github.com/jannebor/dd_forecast/blob/main/workflow/1_Preparation/model_preparation/3.1_feature_selection.R) using the Boruta algorithm [Kursa & Rudnicki 2010](https://doi.org/10.18637/jss.v036.i11). Only relevant features were considered during model building.
+For each of the partition-specific dataframes features were [selected](https://github.com/jannebor/dd_forecast/blob/main/workflow/preparation/model_preparation/feature_selection.R) using the Boruta algorithm [Kursa & Rudnicki 2010](https://doi.org/10.18637/jss.v036.i11). Only relevant features were considered during model building.
 
 ## Model building
 
-In total 510 models were fitted using [AutoML](https://docs.h2o.ai/h2o/latest-stable/h2o-docs/automl.html) in H2O. 222 models were fitted using all species ([partition 1](https://github.com/jannebor/dd_forecast/blob/main/workflow/2_Training/model_partition1.R)), 134 using only marine species and 154 using only non-marine species ([partition 2](https://github.com/jannebor/dd_forecast/blob/main/workflow/2_Training/model_partition2.R)).
+In total 510 models were fitted using [AutoML](https://docs.h2o.ai/h2o/latest-stable/h2o-docs/automl.html) in H2O. 222 models were fitted using all species ([partition 1](https://github.com/jannebor/dd_forecast/blob/main/workflow/training/model_partition1.R)), 134 using only marine species and 154 using only non-marine species ([partition 2](https://github.com/jannebor/dd_forecast/blob/main/workflow/training/model_partition2.R)).
 
 All models were calibrated using 10-fold cross-validation, and ranked in terms of AUC based on the set aside testing data (25%), e.g. for partition 1:
 
@@ -54,9 +54,9 @@ All models were calibrated using 10-fold cross-validation, and ranked in terms o
 
 ## Model evaluation
 
-Performance metrics were calculated based on the [testing data](https://github.com/jannebor/dd_forecast/blob/main/workflow/3_Evaluation/5_model_performance.R) and based on [reclassified Data Deficient species](https://github.com/jannebor/dd_forecast/blob/main/workflow/3_Evaluation/7_dd_predictions.R).
+Performance metrics were calculated based on the [testing data](https://github.com/jannebor/dd_forecast/blob/main/workflow/evaluation/model_performance.R) and based on [reclassified Data Deficient species](https://github.com/jannebor/dd_forecast/blob/main/workflow/evaluation/dd_predictions.R).
 
-[Permutation variable importance](https://github.com/jannebor/dd_forecast/blob/main/workflow/3_Evaluation/6_variable_importance.R) was calculated by measuring performance loss before and after a feature was permuted.
+[Permutation variable importance](https://github.com/jannebor/dd_forecast/blob/main/workflow/evaluation/variable_importance.R) was calculated by measuring performance loss before and after a feature was permuted.
 
 ![Permutation variable importance](figs/ext_data_fig8_trp.png)
 
