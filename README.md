@@ -38,8 +38,7 @@ Training (75%) and testing (25%) data was [prepared](https://github.com/jannebor
 
 ## Model training
 
-In total 510 models were fitted using [AutoML](https://docs.h2o.ai/h2o/latest-stable/h2o-docs/automl.html) in H2O.
-222 models were fitted using all species ([partition 1](https://github.com/jannebor/dd_forecast/blob/main/workflow/2_Training/model_partition1.R)), 134 using only marine species and 154 using only non-marine species ([partition 2](https://github.com/jannebor/dd_forecast/blob/main/workflow/2_Training/model_partition2.R)).
+In total 510 models were fitted using [AutoML](https://docs.h2o.ai/h2o/latest-stable/h2o-docs/automl.html) in H2O. 222 models were fitted using all species ([partition 1](https://github.com/jannebor/dd_forecast/blob/main/workflow/2_Training/model_partition1.R)), 134 using only marine species and 154 using only non-marine species ([partition 2](https://github.com/jannebor/dd_forecast/blob/main/workflow/2_Training/model_partition2.R)).
 
 All models were calibrated using 10-fold cross-validation, and ranked in terms of AUC based on the set aside testing data (25%), e.g. for partition 1:
 
@@ -57,8 +56,7 @@ Performance metrics were calculated based on the testing data and reclassified D
 
 Permutation variable importance was assessed
 
-
-
+![Range map examples - Maxent predictions transformed into potential binary range maps at different levels of confidence using different cut-off thresholds](files/ext_data_fig8.png)
 
 ## Predictions
 
