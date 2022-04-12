@@ -31,6 +31,8 @@ Pre-processing steps, e.g., calculating land-use fractions, etc. are stored in [
 ## Model preparation
 [data_extraction.R](https://github.com/jannebor/dd_forecast/blob/main/workflow/1_Preparation/model_preparation/data_extraction.R) is the underlying function for retrieving predictor data from tables, web sources (IUCN), and the above downloaded spatial datasets for single species, and is applied for entire spatial datasets in [data_extraction_batch.R](https://github.com/jannebor/dd_forecast/blob/main/workflow/1_Preparation/model_preparation/2_data_extraction_batch.R)
 
+Subsequently, training and testing data for each partition (partition 1: all species, partition 2: marine & non-marine species separately) was [prepared](https://github.com/jannebor/dd_forecast/blob/main/workflow/1_Preparation/model_preparation/3_model_prep.R) and relevant [features selected](https://github.com/jannebor/dd_forecast/blob/main/workflow/1_Preparation/model_preparation/3.1_feature_selection.R) using the Boruta algorithm.
+
 
 
 
