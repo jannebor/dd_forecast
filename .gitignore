@@ -1,5 +1,5 @@
 files/
-workflow/ignore/
+ignore/
 .Rproj.user
 .Rhistory
 .RData
