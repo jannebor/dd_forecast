@@ -3,3 +3,7 @@ files/
 .Rhistory
 .RData
 .Ruserdata
+.Renviron
+README.html
+dd_forecast.Rproj
+workflow/ignore
