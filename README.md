@@ -1,7 +1,7 @@
 ## Predicting probability of threat in Data Deficient species
 Numerous species of the IUCN Red List of Threatened Species are classified as Data Deficient. This code was used to predict probabilities of being threatened by extinction for Data Deficient species containing range map data available from the IUCN [spatial data download](https://www.iucnredlist.org/resources/spatial-data-download).
 
-The classifier can be applied for individual species on <https://ml-extinctionrisk.indecol.no/>.
+The classifier can be applied for individual species on <https://ml-extinctionrisk.indecol.no/> (beta version)
 
 ## Predictor data
 #### The following datasets need to be downloaded individually from third-party data sources:
@@ -13,8 +13,8 @@ The classifier can be applied for individual species on <https://ml-extinctionri
 - [Human development index](http://hdr.undp.org/sites/default/files/2020_statistical_annex_all.xlsx)
 - [Corruption Perceptions Index 2020](https://images.transparencycdn.org/images/CPI_FULL_DATA_2021-01-27-162209.zip)
 - Global threats from invasive alien species in the twenty-first century and national response capacities ([Early et al. 2016](https://doi.org/10.1038/ncomms12485))
-- [Land cover](http://maps.elie.ucl.ac.be/CCI/viewer/download.php)
-- [Bio oracle](<https://bio-oracle.org> (<https://doi.org/10.1111/geb.12693>)
+- ESA CCI [Land cover](http://maps.elie.ucl.ac.be/CCI/viewer/download.php)
+- Marine data layers for ecological modelling: [Bio-ORACLE](https://bio-oracle.org)
 - Climatologies at high resolution for the earth's land surface areas ([Karger et al. 2018](https://doi.org/10.5061/dryad.kd1d4))
 - Global terrestrial Human Footprint maps for 2009 ([Venter et al. 2016](https://doi.org/10.1038/sdata.2016.67))
 - Human modification gradient ([Kennedy et al. 2019](https://doi.org/10.1111/gcb.14549))
