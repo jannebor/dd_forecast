@@ -34,11 +34,14 @@ Pre-processing steps, e.g., calculating land-use fractions, etc. are stored in [
 
 [data_extraction.R](https://github.com/jannebor/dd_forecast/blob/main/workflow/1_Preparation/model_preparation/data_extraction.R) is the underlying function for retrieving predictor data from tables, web sources (i.e., IUCN, GBIF & OBIS), and the above downloaded spatial datasets for single species, and is applied for entire spatial datasets in [data_extraction_batch.R](https://github.com/jannebor/dd_forecast/blob/main/workflow/1_Preparation/model_preparation/2_data_extraction_batch.R)
 
-Training and testing data was [prepared](https://github.com/jannebor/dd_forecast/blob/main/workflow/1_Preparation/model_preparation/3_model_prep.R) for each partition (partition 1: all species, partition 2: marine & non-marine species separately) and relevant [features selected](https://github.com/jannebor/dd_forecast/blob/main/workflow/1_Preparation/model_preparation/3.1_feature_selection.R) using the Boruta algorithm [Kursa & Rudnicki 2010](https://doi.org/10.18637/jss.v036.i11).
+Training (75%) and testing (25%) data was [prepared](https://github.com/jannebor/dd_forecast/blob/main/workflow/1_Preparation/model_preparation/3_model_prep.R) for each partition (partition 1: all species, partition 2: marine & non-marine species separately) and relevant [features selected](https://github.com/jannebor/dd_forecast/blob/main/workflow/1_Preparation/model_preparation/3.1_feature_selection.R) using the Boruta algorithm [Kursa & Rudnicki 2010](https://doi.org/10.18637/jss.v036.i11).
 
 ## Model training
 
-Different algorithms were utilized using [AutoML](https://docs.h2o.ai/h2o/latest-stable/h2o-docs/automl.html) in H2O. Models were training using 10-fold cross-validation, and ranked in terms of AUC based on the set aside testing data (25%).
+In total 510 models were fitted using [AutoML](https://docs.h2o.ai/h2o/latest-stable/h2o-docs/automl.html) in H2O.
+222 models were fitted using all species ([partition 1](https://github.com/jannebor/dd_forecast/blob/main/workflow/2_Training/model_partition1.R)), 134 using only marine species and 154 using only non-marine species ([partition 2](https://github.com/jannebor/dd_forecast/blob/main/workflow/2_Training/model_partition2.R)).
+
+All models were calibrated using 10-fold cross-validation, and ranked in terms of AUC based on the set aside testing data (25%), e.g. for partition 1:
 
 | model_id                                 | auc   | logloss | aucpr | mean_per_class_error | rmse  | mse   |
 |------------------------------------------|-------|---------|-------|----------------------|-------|-------|
@@ -49,6 +52,10 @@ Different algorithms were utilized using [AutoML](https://docs.h2o.ai/h2o/latest
 | StackedEnsemble_BestOfFamily_4\_AutoML_1 | 0.909 | 0.318   | 0.793 | 0.184                | 0.313 | 0.098 |
 
 ## Model evaluation
+
+Performance metrics were calculated based on the testing data and reclassified Data Deficient species
+
+Permutation variable importance was assessed
 
 
 
