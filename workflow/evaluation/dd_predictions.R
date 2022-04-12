@@ -1,5 +1,5 @@
 library(h2o)
-load(file="~/GitHub/dd_forecast/dataframes/df_ml1_v2")
+load(file="~/GitHub/dd_forecast/dataframes/full_data/df_ml1_v2")
 # only select confirmed variables
 load("~/GitHub/dd_forecast/dataframes/Partition1/variable_selection/VarSel")
 df_ml1<-df_ml1[which(names(df_ml1) %in% c(names(df_ml1)[c(2,7,16:25,3233:3236)],names(VarSel$finalDecision)[which(VarSel$finalDecision=="Confirmed")]))]
@@ -29,8 +29,8 @@ length(which(preds$predict=="threatened"))/nrow(preds)
 mean(preds$threatened)
 mean(preds_ds$threatened)
 length(which(preds$predict=="threatened"))
-#save(preds, file="~/GitHub/dd_forecast/dataframes/preds_dd")
-load(file="~/GitHub/dd_forecast/dataframes/preds_dd")
+#save(preds, file="~/GitHub/dd_forecast/dataframes/Partition1/predictions/preds_dd")
+load(file="~/GitHub/dd_forecast/dataframes/Partition1/predictions/preds_dd")
 
 # check for re-evaluated data-deficient species
 library(rredlist)
