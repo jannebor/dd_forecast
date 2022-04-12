@@ -8,10 +8,23 @@ library(readxl)
 library(robis)
 library(rredlist)
 library(rgdal)
+library(sf)
+library(fasterize)
+library(exactextractr)
 
 ### create functions
+
+
 # requires IUCN API access
-iucn_key_n <- "..."
+if(!exists("iucn_key_n")){
+  if(file.exists("~/GitHub/dd_forecast/files/iucn_key_n")){
+    load("~/GitHub/dd_forecast/files/iucn_key_n")
+  } else {
+    iucn_key_n <- rstudioapi::askForPassword("iucn_key_n")
+  }
+}
+
+
 
 iucn_native_country <-function(species, iucn_key_n){
   #iucn countries
@@ -23,15 +36,13 @@ iucn_native_country <-function(species, iucn_key_n){
   return(country_list)
 }
 
-
-
 # creating a fishnet in 30 arcmin resolution
 occ_cell_fishnet <- raster()
 res(occ_cell_fishnet) <- 0.5
 crs(occ_cell_fishnet) <- CRS("+proj=longlat +datum=WGS84")
 occ_cell_fishnet <- rasterToPolygons(occ_cell_fishnet)
 
-## load raster stack: environmental stressors
+## load raster stack: spatial environmental predictors
 # raster stack: created in mapping_raster_stack.R
 predictors_stack<-stack("~/GitHub/dd_forecast/files/raster/predictors_stack.grd")
 
@@ -44,11 +55,12 @@ CI<-read.xlsx("~/GitHub/dd_forecast/files/connectivity_index_pnas.xlsx", sheetIn
 
 #Byers et al. 2019 A Global Database of Power Plants (https://datasets.wri.org/dataset/globalpowerplantdatabase)
 powerplants<-read.csv("~/GitHub/dd_forecast/files/globalpowerplantdatabasev120/global_power_plant_database.csv")
-powerplants<-SpatialPointsDataFrame(data.frame(x=powerplants$longitude, y=powerplants$latitude),powerplants,proj4string = CRS("+proj=longlat +datum=WGS84"))
+powerplants <- st_as_sf(powerplants, coords = c("longitude","latitude"))
+powerplants <- st_set_crs(powerplants, 4326) 
 
 #Mulligan et al. 2020 GOODD, a global dataset of more than 38,000 georeferenced dams doi:10.1038/s41597-020-0362-5
-dams<-shapefile("~/GitHub/dd_forecast/files/GOODD_data/Data/GOOD2_dams.shp")
-dams<-spTransform(dams,CRS("+proj=longlat +datum=WGS84"))
+dams<-st_read("~/GitHub/dd_forecast/files/GOODD_data/Data/GOOD2_dams.shp")
+dams <- st_set_crs(dams, 4326) 
 
 #Human development index (http://hdr.undp.org/sites/default/files/2020_statistical_annex_all.xlsx)
 hdi<-read_xlsx("~/GitHub/dd_forecast/files/HDI/2020_statistical_annex_all.xlsx", sheet = 3, skip=4, n_max = 200)
@@ -69,27 +81,28 @@ cpd<-cpd[c(1,11,12)]
 cpd<-na.exclude(cpd)
 
 data_extraction<-function(species_polygon){
-  lapply(c("raster", "stringr", "rgbif", 
-                "rgeos","rgdal",
-                "robis", "rredlist",
-                "sf", "exactextractr"), require, character.only=T)
-                  
-                               
-                              
+
                                species_polygon<-subset(species_polygon, species_polygon$presence==1)
                                species_polygon<-subset(species_polygon, species_polygon$origin==1)
                                
                                
-                               if(length(species_polygon)>0){
+                               if(nrow(species_polygon)>0){
                                  
-                                 species_polygon<-spTransform(species_polygon,CRS("+proj=longlat +datum=WGS84"))
+                                 if(length(grep("wgs84",tolower(crs(species_polygon))))<1){
+                                   
+                                   species_polygon <- species_polygon%>% st_transform("+proj=longlat +datum=WGS84 +no_defs")
+                                   
+                                 }
+                                 
+
                                  
                                  for(m in 1:length(unique(species_polygon$seasonal))){
                                    species_polygon<-subset(species_polygon, species_polygon$seasonal==species_polygon$seasonal[m])
                                    
                                    if(nrow(species_polygon)>0){
                                      
-                                     df_ml.i<-species_polygon@data
+                                     df_ml.i<-as.data.frame(species_polygon)
+                                     df_ml.i<-df_ml.i[-which(names(df_ml.i) %in% "geometry")]
                                      
                                      
                                      if(paste("countries") %in% names(df_ml.i)==FALSE){
@@ -203,7 +216,7 @@ data_extraction<-function(species_polygon){
                                      
                                      
                                      range_ras<-NULL
-                                     range_ras<-rasterize(species_polygon, predictors_stack[[24]])
+                                     range_ras<-fasterize(species_polygon, predictors_stack[[24]])
                                      range_ras[!is.na(range_ras)]<-1
                                      
                                      if(paste("range_extent") %in% names(df_ml.i)==FALSE){
@@ -405,8 +418,10 @@ data_extraction<-function(species_polygon){
                                        names(df_ml.i)<-c(names(df_ml.i[-ncol(df_ml.i)]),paste("n_powerplants"))
                                      }
                                      
+
                                      df_ml.i[which(df_ml.i$binomial==species_polygon$binomial[1]&df_ml.i$seasonal==species_polygon$seasonal[1]),
-                                             which(names(df_ml.i) %in% paste("n_powerplants"))] <- length(powerplants[!is.na(sp::over(powerplants, sp::geometry(species_polygon))), ])
+                                             which(names(df_ml.i) %in% paste("n_powerplants"))] <- length(sf::st_intersects(species_polygon,powerplants)[[1]])
+
                                      
                                      if(paste("n_dams") %in% names(df_ml.i)==FALSE){
                                        df_ml.i[ncol(df_ml.i)+1]<-NA
@@ -414,141 +429,266 @@ data_extraction<-function(species_polygon){
                                      }
                                      
                                      df_ml.i[which(df_ml.i$binomial==species_polygon$binomial[1]&df_ml.i$seasonal==species_polygon$seasonal[1]),
-                                             which(names(df_ml.i) %in% paste("n_dams"))] <- length(dams[!is.na(sp::over(dams, sp::geometry(species_polygon))), ])
+                                             which(names(df_ml.i) %in% paste("n_dams"))] <- length(sf::st_intersects(species_polygon,dams)[[1]])
                                      
-                                     if(paste("population_size") %in% names(df_ml.i)==FALSE){
-                                       df_ml.i[ncol(df_ml.i)+1]<-NA
-                                       names(df_ml.i)<-c(names(df_ml.i[-ncol(df_ml.i)]),paste("population_size"))
-                                     }
-                                     
-                                     if(paste("population_trend5") %in% names(df_ml.i)==FALSE){
-                                       df_ml.i[ncol(df_ml.i)+1]<-NA
-                                       names(df_ml.i)<-c(names(df_ml.i[-ncol(df_ml.i)]),paste("population_trend5"))
-                                     }
-                                     
-                                     if(paste("population_trend10") %in% names(df_ml.i)==FALSE){
-                                       df_ml.i[ncol(df_ml.i)+1]<-NA
-                                       names(df_ml.i)<-c(names(df_ml.i[-ncol(df_ml.i)]),paste("population_trend10"))
-                                     }
-                                     
-                                     # estimate species population
-                                     trend<-NULL
-                                     occ<-NULL
-                                     occ_all<-NULL
-                                     occ1<-NULL
-                                     all<-NULL
-                                     if(length(country_list)>0){
-                                       
-                                       #POPULATION TREND
-                                       trend<-NULL
-                                       occ<-NULL
-                                       occ_all<-NULL
-                                       occ1<-NULL
-                                       all<-NULL
-                                       tryCatch({
-                                         occ1<-rgbif::count_facet(key, by='country', countries=country_list, removezeros = FALSE)
-                                       }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
-                                       tryCatch({
-                                         all<-rgbif::count_facet(name_backbone(name=paste(species_polygon$binomial[1]))$classKey, by='country', countries=country_list, removezeros = FALSE)
-                                       }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
-                                       
-                                       occ1$V2<-all$count
-                                       occ1$fraction<-occ1$count/occ1$V2
-                                       if(length(country_list)>1){
-                                         df_ml.i[which(df_ml.i$binomial==species_polygon$binomial[1]&df_ml.i$seasonal==species_polygon$seasonal[1]),
-                                                 which(names(df_ml.i) %in% paste("population_size"))] <-as.numeric(mean(aggregate(occ1$fraction~occ1$country, FUN=mean)[,2]))
-                                       } else {
-                                         df_ml.i[which(df_ml.i$binomial==species_polygon$binomial[1]&df_ml.i$seasonal==species_polygon$seasonal[1]),
-                                                 which(names(df_ml.i) %in% paste("population_size"))] <- as.numeric(occ1$fraction)
-                                       }
-                                       
-                                       if(mean(occ1$count)>0){
-                                         trend<-data.frame(fraction=NA, year=NA, country=NA, change=NA)
-                                         
-                                         for (c in 1:length(country_list)){
-                                           
-                                           for (t in 2009:2020) {
-                                             
-                                             occ<-NULL
-                                             occ_all<-NULL
-                                             tryCatch({
-                                               occ<-occ_count(taxonKey=key, country = paste(country_list[c]), year=t)
-                                             }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
-                                             tryCatch({
-                                               occ_all<-occ_count(taxonKey = name_backbone(name=paste(species_polygon$binomial[1]))$classKey,year=t, country = paste(country_list[c]))
-                                             }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
-                                             
-                                             
-                                             trend$fraction[nrow(trend)]<-occ/occ_all
-                                             if(is.na(occ/occ_all)){
-                                               trend$fraction[nrow(trend)]<-0
-                                             }
-                                             
-                                             
-                                             trend$year[nrow(trend)]<-t
-                                             trend$country[nrow(trend)]<-country_list[c]
-                                             
-                                             if(nrow(trend)>1){
-                                               trend$change[nrow(trend)]<-trend$fraction[nrow(trend)]-trend$fraction[(nrow(trend)-1)]
-                                             }
-                                             
-                                             if(nrow(trend)<(length(country_list)*length(1999:2020))){
-                                               trend[(nrow(trend)+1),]<-NA
-                                             }
-                                             
-                                             
-                                             
-                                           }
-                                         }
-                                         
-                                         
-                                         
-                                         
-                                         if(length(country_list)>1){
-                                           trend<-subset(trend, trend$year>2009)
-                                           df_ml.i[which(df_ml.i$binomial==species_polygon$binomial[1]&df_ml.i$seasonal==species_polygon$seasonal[1]),
-                                                   which(names(df_ml.i) %in% paste("population_trend10"))] <- as.numeric(mean(aggregate(trend$change~trend$country, FUN=mean)[,2]))
-                                           
-                                           trend<-subset(trend, trend$year>2014)
-                                           df_ml.i[which(df_ml.i$binomial==species_polygon$binomial[1]&df_ml.i$seasonal==species_polygon$seasonal[1]),
-                                                   which(names(df_ml.i) %in% paste("population_trend5"))] <- as.numeric(mean(aggregate(trend$change~trend$country, FUN=mean)[,2]))
-                                         } else {
-                                           trend<-subset(trend, trend$year>2009)
-                                           df_ml.i[which(df_ml.i$binomial==species_polygon$binomial[1]&df_ml.i$seasonal==species_polygon$seasonal[1]),
-                                                   which(names(df_ml.i) %in% paste("population_trend10"))] <- as.numeric(mean((trend$change)))
-                                           
-                                           trend<-subset(trend, trend$year>2014)
-                                           df_ml.i[which(df_ml.i$binomial==species_polygon$binomial[1]&df_ml.i$seasonal==species_polygon$seasonal[1]),
-                                                   which(names(df_ml.i) %in% paste("population_trend5"))] <- as.numeric(mean((trend$change)))
-                                         }
-                                         
-                                       }
-                                       
-                                     }
-                                     
-                                     
-                                     
-                                     # extract raster data
-                                     remove_data_spatialpolygons <- function(spdf) {
-                                       SpatialPolygons(spdf@polygons, spdf@plotOrder, CRS(proj4string(spdf)))
-                                     }
-                                     
-                                     extr_pol<-remove_data_spatialpolygons(species_polygon)
-                                     extr_pol<-sf::st_as_sf(extr_pol)
+                                     extr_pol<-species_polygon
                                      df_ml.i<-cbind(df_ml.i,exactextractr::exact_extract(predictors_stack, extr_pol, c('median','mean','min','max')))
                                      
-                                     r_cnams<-names(df_ml.i[67:length(df_ml.i)])
+                                     r_cnams<-names(df_ml.i[64:length(df_ml.i)])
                                      
                                      if(length(occ_cell)>0){
                                        extr_pol<-sf::st_as_sf(aggregate(occ_cell))
                                        df_ml.i<-cbind(df_ml.i,exactextractr::exact_extract(predictors_stack, extr_pol, c('median','mean','min','max')))
-                                       colnames(df_ml.i)[1639:length(df_ml.i)]<-stringr::str_c("occ_",r_cnams)
+                                       colnames(df_ml.i)[1620:length(df_ml.i)]<-stringr::str_c("occ_",r_cnams)
                                        
                                      } else {
-                                       df_ml.i[,c(1639:(1638+length(r_cnams)))]<-NA
-                                       colnames(df_ml.i)[1639:length(df_ml.i)]<-stringr::str_c("occ_",r_cnams)
+                                       df_ml.i[,c(1620:(1619+length(r_cnams)))]<-NA
+                                       colnames(df_ml.i)[1620:length(df_ml.i)]<-stringr::str_c("occ_",r_cnams)
                                      }
                                      
+                                     
+                                     
+                                     hab_ls<-NULL
+                                     t0<-Sys.time()
+                                     while(length(hab_ls)<1){
+                                       tryCatch({
+                                         hab_ls <- rl_habitats(as.character(species_polygon$binomial[1]), key=iucn_key_n)
+                                       }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
+                                       t1<-Sys.time()
+                                       print((t1-t0)[[1]])
+                                       Sys.sleep(2)
+                                       if((t1-t0)[[1]]>30){
+                                         break
+                                       }
+                                     }
+                                     
+                                     
+                                     
+                                     hab_ls<-hab_ls$result
+
+                                     if(paste("n_habitats") %in% names(df_ml.i)==FALSE){
+                                       df_ml.i[ncol(df_ml.i)+1]<-NA
+                                       names(df_ml.i)<-c(names(df_ml.i[-ncol(df_ml.i)]),paste("n_habitats"))
+                                     }
+                                     
+                                     if(paste("n_subhabitats") %in% names(df_ml.i)==FALSE){
+                                       df_ml.i[ncol(df_ml.i)+1]<-NA
+                                       names(df_ml.i)<-c(names(df_ml.i[-ncol(df_ml.i)]),paste("n_subhabitats"))
+                                     }
+                                     
+                                     if(paste("n_importanthabitats") %in% names(df_ml.i)==FALSE){
+                                       df_ml.i[ncol(df_ml.i)+1]<-NA
+                                       names(df_ml.i)<-c(names(df_ml.i[-ncol(df_ml.i)]),paste("n_importanthabitats"))
+                                     }
+                                     
+                                     if(paste("perc_importanthabitats") %in% names(df_ml.i)==FALSE){
+                                       df_ml.i[ncol(df_ml.i)+1]<-NA
+                                       names(df_ml.i)<-c(names(df_ml.i[-ncol(df_ml.i)]),paste("perc_importanthabitats"))
+                                     }
+                                     
+                                     if(paste("habitat1") %in% names(df_ml.i)==FALSE){
+                                       df_ml.i[ncol(df_ml.i)+1]<-NA
+                                       names(df_ml.i)<-c(names(df_ml.i[-ncol(df_ml.i)]),paste("habitat1"))
+                                     }
+                                     if(paste("habitat2") %in% names(df_ml.i)==FALSE){
+                                       df_ml.i[ncol(df_ml.i)+1]<-NA
+                                       names(df_ml.i)<-c(names(df_ml.i[-ncol(df_ml.i)]),paste("habitat2"))
+                                     }
+                                     if(paste("habitat3") %in% names(df_ml.i)==FALSE){
+                                       df_ml.i[ncol(df_ml.i)+1]<-NA
+                                       names(df_ml.i)<-c(names(df_ml.i[-ncol(df_ml.i)]),paste("habitat3"))
+                                     }
+                                     if(paste("habitat4") %in% names(df_ml.i)==FALSE){
+                                       df_ml.i[ncol(df_ml.i)+1]<-NA
+                                       names(df_ml.i)<-c(names(df_ml.i[-ncol(df_ml.i)]),paste("habitat4"))
+                                     }
+                                     if(paste("habitat5") %in% names(df_ml.i)==FALSE){
+                                       df_ml.i[ncol(df_ml.i)+1]<-NA
+                                       names(df_ml.i)<-c(names(df_ml.i[-ncol(df_ml.i)]),paste("habitat5"))
+                                     }
+                                     if(paste("habitat6") %in% names(df_ml.i)==FALSE){
+                                       df_ml.i[ncol(df_ml.i)+1]<-NA
+                                       names(df_ml.i)<-c(names(df_ml.i[-ncol(df_ml.i)]),paste("habitat6"))
+                                     }
+                                     if(paste("habitat7") %in% names(df_ml.i)==FALSE){
+                                       df_ml.i[ncol(df_ml.i)+1]<-NA
+                                       names(df_ml.i)<-c(names(df_ml.i[-ncol(df_ml.i)]),paste("habitat7"))
+                                     }
+                                     if(paste("habitat8") %in% names(df_ml.i)==FALSE){
+                                       df_ml.i[ncol(df_ml.i)+1]<-NA
+                                       names(df_ml.i)<-c(names(df_ml.i[-ncol(df_ml.i)]),paste("habitat8"))
+                                     }
+                                     if(paste("habitat9") %in% names(df_ml.i)==FALSE){
+                                       df_ml.i[ncol(df_ml.i)+1]<-NA
+                                       names(df_ml.i)<-c(names(df_ml.i[-ncol(df_ml.i)]),paste("habitat9"))
+                                     }
+                                     if(paste("habitat10") %in% names(df_ml.i)==FALSE){
+                                       df_ml.i[ncol(df_ml.i)+1]<-NA
+                                       names(df_ml.i)<-c(names(df_ml.i[-ncol(df_ml.i)]),paste("habitat10"))
+                                     }
+                                     if(paste("habitat11") %in% names(df_ml.i)==FALSE){
+                                       df_ml.i[ncol(df_ml.i)+1]<-NA
+                                       names(df_ml.i)<-c(names(df_ml.i[-ncol(df_ml.i)]),paste("habitat11"))
+                                     }
+                                     if(paste("habitat12") %in% names(df_ml.i)==FALSE){
+                                       df_ml.i[ncol(df_ml.i)+1]<-NA
+                                       names(df_ml.i)<-c(names(df_ml.i[-ncol(df_ml.i)]),paste("habitat12"))
+                                     }
+                                     if(paste("habitat13") %in% names(df_ml.i)==FALSE){
+                                       df_ml.i[ncol(df_ml.i)+1]<-NA
+                                       names(df_ml.i)<-c(names(df_ml.i[-ncol(df_ml.i)]),paste("habitat13"))
+                                     }
+                                     if(paste("habitat14") %in% names(df_ml.i)==FALSE){
+                                       df_ml.i[ncol(df_ml.i)+1]<-NA
+                                       names(df_ml.i)<-c(names(df_ml.i[-ncol(df_ml.i)]),paste("habitat14"))
+                                     }
+                                     if(paste("habitat15") %in% names(df_ml.i)==FALSE){
+                                       df_ml.i[ncol(df_ml.i)+1]<-NA
+                                       names(df_ml.i)<-c(names(df_ml.i[-ncol(df_ml.i)]),paste("habitat15"))
+                                     }
+                                     if(paste("habitat16") %in% names(df_ml.i)==FALSE){
+                                       df_ml.i[ncol(df_ml.i)+1]<-NA
+                                       names(df_ml.i)<-c(names(df_ml.i[-ncol(df_ml.i)]),paste("habitat16"))
+                                     }
+                                     if(paste("habitat17") %in% names(df_ml.i)==FALSE){
+                                       df_ml.i[ncol(df_ml.i)+1]<-NA
+                                       names(df_ml.i)<-c(names(df_ml.i[-ncol(df_ml.i)]),paste("habitat17"))
+                                     }
+                                     if(paste("habitat18") %in% names(df_ml.i)==FALSE){
+                                       df_ml.i[ncol(df_ml.i)+1]<-NA
+                                       names(df_ml.i)<-c(names(df_ml.i[-ncol(df_ml.i)]),paste("habitat18"))
+                                     }
+                                   
+                                     
+                                     if(length(hab_ls)>0){
+                                       
+                                       
+                                       df_ml.i$n_subhabitats[which(df_ml.i$binomial==species_polygon$binomial[1])]<-length(unique(hab_ls$code))
+                                       
+                                       hab_ls$code<-str_sub(hab_ls$code, 1, 4)
+                                       df_ml.i$n_habitats[which(df_ml.i$binomial==species_polygon$binomial[1])]<-length(unique(as.integer(hab_ls$code)))
+                                       
+                                       
+                                       hab_ls$code<-as.integer(hab_ls$code)
+                                       
+                                       df_ml.i$n_importanthabitats[which(df_ml.i$binomial==species_polygon$binomial[1])]<-length(unique(hab_ls$code[which(hab_ls$majorimportance=="Yes")]))
+                                       
+                                       
+                                       if(1 %in% hab_ls$code){
+                                         df_ml.i$habitat1[which(df_ml.i$binomial==species_polygon$binomial[1])]<-"Yes"
+                                       } else {
+                                         df_ml.i$habitat1[which(df_ml.i$binomial==species_polygon$binomial[1])]<-"No"
+                                       }
+                                       hab_ls$code<-as.integer(hab_ls$code)
+                                       if(2 %in% hab_ls$code){
+                                         df_ml.i$habitat2[which(df_ml.i$binomial==species_polygon$binomial[1])]<-"Yes"
+                                       } else {
+                                         df_ml.i$habitat2[which(df_ml.i$binomial==species_polygon$binomial[1])]<-"No"
+                                       }
+                                       hab_ls$code<-as.integer(hab_ls$code)
+                                       if(3 %in% hab_ls$code){
+                                         df_ml.i$habitat3[which(df_ml.i$binomial==species_polygon$binomial[1])]<-"Yes"
+                                       } else {
+                                         df_ml.i$habitat3[which(df_ml.i$binomial==species_polygon$binomial[1])]<-"No"
+                                       }
+                                       hab_ls$code<-as.integer(hab_ls$code)
+                                       if(4 %in% hab_ls$code){
+                                         df_ml.i$habitat4[which(df_ml.i$binomial==species_polygon$binomial[1])]<-"Yes"
+                                       } else {
+                                         df_ml.i$habitat4[which(df_ml.i$binomial==species_polygon$binomial[1])]<-"No"
+                                       }
+                                       hab_ls$code<-as.integer(hab_ls$code)
+                                       if(5 %in% hab_ls$code){
+                                         df_ml.i$habitat5[which(df_ml.i$binomial==species_polygon$binomial[1])]<-"Yes"
+                                       } else {
+                                         df_ml.i$habitat5[which(df_ml.i$binomial==species_polygon$binomial[1])]<-"No"
+                                       }
+                                       hab_ls$code<-as.integer(hab_ls$code)
+                                       if(6 %in% hab_ls$code){
+                                         df_ml.i$habitat6[which(df_ml.i$binomial==species_polygon$binomial[1])]<-"Yes"
+                                       } else {
+                                         df_ml.i$habitat6[which(df_ml.i$binomial==species_polygon$binomial[1])]<-"No"
+                                       }
+                                       hab_ls$code<-as.integer(hab_ls$code)
+                                       if(7 %in% hab_ls$code){
+                                         df_ml.i$habitat7[which(df_ml.i$binomial==species_polygon$binomial[1])]<-"Yes"
+                                       } else {
+                                         df_ml.i$habitat7[which(df_ml.i$binomial==species_polygon$binomial[1])]<-"No"
+                                       }
+                                       hab_ls$code<-as.integer(hab_ls$code)
+                                       if(8 %in% hab_ls$code){
+                                         df_ml.i$habitat8[which(df_ml.i$binomial==species_polygon$binomial[1])]<-"Yes"
+                                       } else {
+                                         df_ml.i$habitat8[which(df_ml.i$binomial==species_polygon$binomial[1])]<-"No"
+                                       }
+                                       hab_ls$code<-as.integer(hab_ls$code)
+                                       if(9 %in% hab_ls$code){
+                                         df_ml.i$habitat9[which(df_ml.i$binomial==species_polygon$binomial[1])]<-"Yes"
+                                       } else {
+                                         df_ml.i$habitat9[which(df_ml.i$binomial==species_polygon$binomial[1])]<-"No"
+                                       }
+                                       hab_ls$code<-as.integer(hab_ls$code)
+                                       if(10 %in% hab_ls$code){
+                                         df_ml.i$habitat10[which(df_ml.i$binomial==species_polygon$binomial[1])]<-"Yes"
+                                       } else {
+                                         df_ml.i$habitat10[which(df_ml.i$binomial==species_polygon$binomial[1])]<-"No"
+                                       }
+                                       hab_ls$code<-as.integer(hab_ls$code)
+                                       if(11 %in% hab_ls$code){
+                                         df_ml.i$habitat11[which(df_ml.i$binomial==species_polygon$binomial[1])]<-"Yes"
+                                       } else {
+                                         df_ml.i$habitat11[which(df_ml.i$binomial==species_polygon$binomial[1])]<-"No"
+                                       }
+                                       hab_ls$code<-as.integer(hab_ls$code)
+                                       if(12 %in% hab_ls$code){
+                                         df_ml.i$habitat12[which(df_ml.i$binomial==species_polygon$binomial[1])]<-"Yes"
+                                       } else {
+                                         df_ml.i$habitat12[which(df_ml.i$binomial==species_polygon$binomial[1])]<-"No"
+                                       }
+                                       hab_ls$code<-as.integer(hab_ls$code)
+                                       if(13 %in% hab_ls$code){
+                                         df_ml.i$habitat13[which(df_ml.i$binomial==species_polygon$binomial[1])]<-"Yes"
+                                       } else {
+                                         df_ml.i$habitat13[which(df_ml.i$binomial==species_polygon$binomial[1])]<-"No"
+                                       }
+                                       hab_ls$code<-as.integer(hab_ls$code)
+                                       if(14 %in% hab_ls$code){
+                                         df_ml.i$habitat14[which(df_ml.i$binomial==species_polygon$binomial[1])]<-"Yes"
+                                       } else {
+                                         df_ml.i$habitat14[which(df_ml.i$binomial==species_polygon$binomial[1])]<-"No"
+                                       }
+                                       hab_ls$code<-as.integer(hab_ls$code)
+                                       if(15 %in% hab_ls$code){
+                                         df_ml.i$habitat15[which(df_ml.i$binomial==species_polygon$binomial[1])]<-"Yes"
+                                       } else {
+                                         df_ml.i$habitat15[which(df_ml.i$binomial==species_polygon$binomial[1])]<-"No"
+                                       }
+                                       hab_ls$code<-as.integer(hab_ls$code)
+                                       if(16 %in% hab_ls$code){
+                                         df_ml.i$habitat16[which(df_ml.i$binomial==species_polygon$binomial[1])]<-"Yes"
+                                       } else {
+                                         df_ml.i$habitat16[which(df_ml.i$binomial==species_polygon$binomial[1])]<-"No"
+                                       }
+                                       hab_ls$code<-as.integer(hab_ls$code)
+                                       if(17 %in% hab_ls$code){
+                                         df_ml.i$habitat17[which(df_ml.i$binomial==species_polygon$binomial[1])]<-"Yes"
+                                       } else {
+                                         df_ml.i$habitat17[which(df_ml.i$binomial==species_polygon$binomial[1])]<-"No"
+                                       }
+                                       hab_ls$code<-as.integer(hab_ls$code)
+                                       if(18 %in% hab_ls$code){
+                                         df_ml.i$habitat18[which(df_ml.i$binomial==species_polygon$binomial[1])]<-"Yes"
+                                       } else {
+                                         df_ml.i$habitat18[which(df_ml.i$binomial==species_polygon$binomial[1])]<-"No"
+                                       }
+                                       
+                                       
+                                       df_ml.i$perc_importanthabitats<-df_ml.i$n_importanthabitats/df_ml.i$n_habitats
+                                       
+                                     }
+                                     
+                                     
+                                              
                                      
                                      return(df_ml.i)  
                                      
@@ -564,7 +704,6 @@ data_extraction<-function(species_polygon){
 
 #example
 #getting IUCN range maps
-#pol<-shapefile("./AMPHIBIANS.shp")
-#species_polygon<-subset(pol, pol$binomial==unique(pol$binomial)[1])
-
+#pol<-st_read("~/GitHub/dd_forecast/files/range_maps/Version2020-3/AMPHIBIANS/AMPHIBIANS.shp")
+#species_polygon<-subset(pol, pol$id_no==unique(pol$id_no)[3])
 #df_extr<-data_extraction(species_polygon)

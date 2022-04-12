@@ -2,7 +2,7 @@ library(raster)
 library(stringr)
 
 
-# required files: 
+# required third-party data sources: 
 #land cover: http://maps.elie.ucl.ac.be/CCI/viewer/download.php
 #Bio oracle: https://bio-oracle.org (https://doi.org/10.1111/geb.12693)
 #Karger et al. 2018. Data from: Climatologies at high resolution for the earth’s land surface areas doi:10.5061/dryad.kd1d4
@@ -16,7 +16,9 @@ library(stringr)
 #Early et al. 2016 Global threats from invasive alien species in the twenty-first century and national response capacities (doi:10.1038/ncomms12485)
 #Halpern et al. 2008 A Global Map of Human Impact on Marine Ecosystems (doi:10.1126/science.1149345; 10.1038/ncomms8615)
 #UNEP-WCMC & IUCN 2021 Protected Planet: The World Database on Protected Areas (WDPA) (www.protectedplanet.net)
-# note: .nc files need to be converted to .tif
+
+
+# NOTE: .nc files need to be converted to .tif before stacking
 
 #list raster files
 files<-list.files(path = "...", pattern = ".tif$", all.files = FALSE, recursive = TRUE,
@@ -45,3 +47,5 @@ for (f in 1:length(files)){
 }
 
 writeRaster(predictors_stack,"~/GitHub/dd_forecast/files/raster/predictors_stack.grd", format="raster")
+
+

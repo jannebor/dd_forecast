@@ -1,5 +1,5 @@
 # get data frames created in 2_data_extraction_batch.R for all spatial data available at IUCN
-load("~/GitHub/dd_forecast/dataframes/df_ml")
+load("~/GitHub/dd_forecast/dataframes/df_ml_v2")
 
 # reclassify to threatened and not threatened species
 df_ml$category <- as.character(df_ml$category)
@@ -91,6 +91,38 @@ df_ml$terrestial<-as.factor(df_ml$terrestial)
 df_ml$freshwater<-as.factor(df_ml$freshwater)
 
 
+df_ml$n_habitats<-as.numeric(df_ml$n_habitats)
+df_ml$n_subhabitats<-as.numeric(df_ml$n_subhabitats)
+df_ml$n_importanthabitats<-as.numeric(df_ml$n_importanthabitats)
+df_ml$perc_importanthabitats<-as.numeric(df_ml$perc_importanthabitats)
+df_ml$habitat1<-as.factor(df_ml$habitat1)
+df_ml$habitat2<-as.factor(df_ml$habitat2)
+df_ml$habitat3<-as.factor(df_ml$habitat3)
+df_ml$habitat4<-as.factor(df_ml$habitat4)
+df_ml$habitat5<-as.factor(df_ml$habitat5)
+df_ml$habitat6<-as.factor(df_ml$habitat6)
+df_ml$habitat7<-as.factor(df_ml$habitat7)
+df_ml$habitat8<-as.factor(df_ml$habitat8)
+df_ml$habitat9<-as.factor(df_ml$habitat9)
+df_ml$habitat10<-as.factor(df_ml$habitat10)
+df_ml$habitat11<-as.factor(df_ml$habitat11)
+df_ml$habitat12<-as.factor(df_ml$habitat12)
+df_ml$habitat13<-as.factor(df_ml$habitat13)
+df_ml$habitat14<-as.factor(df_ml$habitat14)
+df_ml$habitat15<-as.factor(df_ml$habitat15)
+df_ml$habitat16<-as.factor(df_ml$habitat16)
+df_ml$habitat17<-as.factor(df_ml$habitat17)
+df_ml$habitat18<-as.factor(df_ml$habitat18)
+
+
+# remove non finite values
+for(i in 1:ncol(df_ml)){
+  if(!is.character(df_ml[,i])){
+    df_ml[which(!is.finite(df_ml[,i])),i]<-NA
+    print(i)
+  }
+}
+
 
 ###
 ## fill NA's to increase number of complete cases
@@ -111,16 +143,18 @@ for(i in 1:ncol(df_ml)){
     df_ml[,i] <- with(df_ml, impute(df_ml[,i], 'random'))
     df_ml[,i] <- as.factor(df_ml[,i])
   }
+  if(is.factor(df_ml[,i])){
+    df_ml[,i] <- with(df_ml, impute(df_ml[,i], 'random'))
+    df_ml[,i] <- as.factor(df_ml[,i])
+  }
 }
 
 df_ml<-na.exclude(df_ml)
 
 
-
-
 # set aside one version of the data frame for predictions, with only "resident" range maps
 df_ml1<-subset(df_ml, df_ml$seasonal==1)
-save(df_ml1, file="~/GitHub/dd_forecast/dataframes/df_ml1")
+#save(df_ml1, file="~/GitHub/dd_forecast/dataframes/df_ml1_v2")
 
 # remove extinct and data deficient species from dataset
 df_ml<-subset(df_ml, df_ml$category!="EX")
@@ -138,6 +172,7 @@ df_ml<-df_ml[c(2:5,16:21,22:25,28:ncol(df_ml))]
 # DATA SPLIT
 ###
 # create partitions for spliiting data equally in marine/non marine system
+###
 part_mar<-subset(df_ml, tolower(df_ml$marine)=="true")
 part_terr<-subset(df_ml, tolower(df_ml$marine)=="false")
 
@@ -214,10 +249,13 @@ test_terr<-subset(test_terr, test_terr$needs_update=="No")
 train_df<-rbind(train_mar, train_terr)
 test_df<-rbind(test_mar, test_terr)
 
-save(train_terr, file="~/GitHub/dd_forecast/dataframes/train_terr")
-save(test_terr, file="~/GitHub/dd_forecast/dataframes/test_terr")
-save(train_mar, file="~/GitHub/dd_forecast/dataframes/train_mar")
-save(test_mar, file="~/GitHub/dd_forecast/dataframes/test_mar")
-save(train_df, file="~/GitHub/dd_forecast/dataframes/train_df")
-save(test_df, file="~/GitHub/dd_forecast/dataframes/test_df")
+names(train_terr)
+
+
+#save(train_terr, file="~/GitHub/dd_forecast/dataframes/Partition2/train_terr_v2")
+#save(test_terr, file="~/GitHub/dd_forecast/dataframes/Partition2/test_terr_v2")
+#save(train_mar, file="~/GitHub/dd_forecast/dataframes/Partition2/train_mar_v2")
+#save(test_mar, file="~/GitHub/dd_forecast/dataframes/Partition2/test_mar_v2")
+#save(train_df, file="~/GitHub/dd_forecast/dataframes/Partition1/train_df_v2")
+#save(test_df, file="~/GitHub/dd_forecast/dataframes/Partition1/test_df_v2")
 
