@@ -1,4 +1,5 @@
 files/
+workflow/ignore/
 .Rproj.user
 .Rhistory
 .RData
@@ -6,4 +7,3 @@ files/
 .Renviron
 README.html
 dd_forecast.Rproj
-workflow/ignore
