@@ -1,6 +1,6 @@
 ## Extinction Risk of Data Deficient species
-Numerous species of the IUCN Red List of Threatened Species are classified as [Data Deficient](https://www.iucnredlist.org/search?permalink=2ed13c01-7e0e-4596-a100-38ed47d30a99). This code was used to predict probabilities of being threatened by extinction for Data Deficient species containing range map data available from the IUCN [spatial data download](https://www.iucnredlist.org/resources/spatial-data-download). The classifier can be applied for individual species using our [web application](https://ml-extinctionrisk.indecol.no/) (alpha version)
-![Number of threatened DD species](figs/ext_data_fig4_trp.png)
+
+Numerous species of the IUCN Red List of Threatened Species are classified as [Data Deficient](https://www.iucnredlist.org/search?permalink=2ed13c01-7e0e-4596-a100-38ed47d30a99). This code was used to predict probabilities of being threatened by extinction for Data Deficient species containing range map data available from the IUCN [spatial data download](https://www.iucnredlist.org/resources/spatial-data-download). The classifier can be applied for individual species using our [web application](https://ml-extinctionrisk.indecol.no/) (alpha version). ![Number of threatened DD species](figs/ext_data_fig4_trp.png)
 
 ## Predictor data
 
@@ -26,7 +26,7 @@ Numerous species of the IUCN Red List of Threatened Species are classified as [D
 -   Human Impacts on Marine Ecosystems ([Halpern et al. 2008](https://doi.org/10.1126/science.1149345))
 -   World Database on Protected Areas ([UNEP-WCMC & IUCN 2021](www.protectedplanet.net))
 
-Pre-processing steps, e.g., calculating land-use fractions, etc. are stored in [raster_preparation](https://github.com/jannebor/dd_forecast/tree/main/workflow/1_Preparation/raster_preparation)
+Scripts for data pre-processing, e.g., calculating land-use fractions, etc. is stored in [raster_preparation](https://github.com/jannebor/dd_forecast/tree/main/workflow/1_Preparation/raster_preparation)
 
 ## Model preparation
 
@@ -50,11 +50,11 @@ All models were calibrated using 10-fold cross-validation, and ranked in terms o
 
 ## Model evaluation
 
-Performance metrics were calculated based on the testing data and reclassified Data Deficient species
+Performance metrics were calculated based on the [testing data](https://github.com/jannebor/dd_forecast/blob/main/workflow/3_Evaluation/5_model_performance.R) and based on [reclassified Data Deficient species](https://github.com/jannebor/dd_forecast/blob/main/workflow/3_Evaluation/7_dd_predictions.R).
 
-Permutation variable importance was assessed
+[Permutation variable importance](https://github.com/jannebor/dd_forecast/blob/main/workflow/3_Evaluation/6_variable_importance.R) was calculated by measuring performance loss before and after a feature was permuted.
 
-![Permutation variable importance](figs/ext_data_fig8.png)
+![Permutation variable importance](figs/ext_data_fig8_trp.png)
 
 ## Predictions
 
