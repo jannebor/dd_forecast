@@ -1,4 +1,4 @@
-# get data frames created in 2_data_extraction_batch.R for all spatial data available at IUCN
+# get data frames created in data_extraction_batch.R for all spatial data available at IUCN
 load("dataframes/full_data/df_ml_v2")
 
 # reclassify to threatened and not threatened species

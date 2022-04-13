@@ -83,3 +83,6 @@ confusionMatrix(factor(preds_upd_mar$predict), factor(preds_upd_mar$category_gro
 confusionMatrix(factor(preds_upd_nonmar$predict), factor(preds_upd_nonmar$category_group_new))
 # confusion matrix for all species
 confusionMatrix(factor(preds_upd$predict), factor(preds_upd$category_group_new))
+
+# end h2o session
+h2o::h2o.shutdown(prompt = F)

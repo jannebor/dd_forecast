@@ -41,3 +41,6 @@ graphics::boxplot(t(vi[, -1]), names = vi$Variable, horizontal = TRUE, col = "wh
                   xlab = "Permutation Variable Importance", axes = FALSE)
 graphics::axis(1)
 graphics::axis(2, at = seq_along(vi$Variable),labels = vi$Variable, las = 2, lwd = 0)
+
+# end h2o session
+h2o::h2o.shutdown(prompt = F)

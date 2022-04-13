@@ -5,5 +5,3 @@ ignore/
 .RData
 .Ruserdata
 .Renviron
-README.html
-dd_forecast.Rproj

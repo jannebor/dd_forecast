@@ -36,3 +36,5 @@ mean(preds$threatened)
 # average predicted score for Data sufficient species
 mean(preds_ds$threatened)
 
+# end h2o session
+h2o::h2o.shutdown(prompt = F)
