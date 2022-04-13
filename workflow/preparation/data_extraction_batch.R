@@ -11,8 +11,8 @@ if(!exists("iucn_key_n")){
 }
 
 
-# load IUCN range maps, retrieved from https://www.iucnredlist.org/resources/spatial-data-download
-# for instance spatial data for amphibians
+# IUCN range maps retrieved from https://www.iucnredlist.org/resources/spatial-data-download
+# for example: amphibians
 pol<-st_read("~/GitHub/dd_forecast/files/range_maps/Version2020-3/AMPHIBIANS/AMPHIBIANS.shp")
 
 # number of cores used for parallel processing
@@ -37,7 +37,7 @@ df_ml_sub<-foreach(s = 1:iterations, .options.snow = opts, .combine = "rbind",
   #using the function created in data_extraction.R
   if(!exists("data_extraction")) {
     
-    source("~/GitHub/dd_forecast/workflow/1_Preparation/model_preparation/data_extraction.R")
+    source("~/GitHub/dd_forecast/workflow/preparation/data_extraction.R")
     
   }
   
