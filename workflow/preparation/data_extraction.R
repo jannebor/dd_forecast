@@ -16,8 +16,8 @@ library(exactextractr)
 #################
 # requires IUCN API access
 if(!exists("iucn_key_n")){
-  if(file.exists("~/GitHub/dd_forecast/files/iucn_key_n")){
-    load("~/GitHub/dd_forecast/files/iucn_key_n")
+  if(file.exists("files/iucn_key_n")){
+    load("files/iucn_key_n")
   } else {
     iucn_key_n <- rstudioapi::askForPassword("iucn_key_n")
   }
@@ -41,26 +41,26 @@ occ_cell_fishnet <- rasterToPolygons(occ_cell_fishnet)
 
 ## load raster stack: spatial environmental predictors
 # raster stack: created in mapping_raster_stack.R
-predictors_stack<-stack("~/GitHub/dd_forecast/files/raster/predictors_stack.grd")
+predictors_stack<-stack("files/raster/predictors_stack.grd")
 
 #### the following data needs to be downloaded individually from the indicated sources:
 #Boulay et al. 2018 The WULCA consensus characterization model for water scarcity footprints: assessing impacts of water consumption based on available water remaining (AWARE) doi:10.1007/s11367-017-1333-8
-aware<-read.xlsx("~/GitHub/dd_forecast/files/AWARE_country_regions_Improved.xlsx", sheetIndex=1)
+aware<-read.xlsx("files/AWARE_country_regions_Improved.xlsx", sheetIndex=1)
 
 #Barbarossa et al. 2020 Impacts of current and future large dams on the geographic range connectivity of freshwater fish worldwide doi:10.1073/pnas.1912776117
-CI<-read.xlsx("~/GitHub/dd_forecast/files/connectivity_index_pnas.xlsx", sheetIndex=1)
+CI<-read.xlsx("files/connectivity_index_pnas.xlsx", sheetIndex=1)
 
 #Byers et al. 2019 A Global Database of Power Plants (https://datasets.wri.org/dataset/globalpowerplantdatabase)
-powerplants<-read.csv("~/GitHub/dd_forecast/files/globalpowerplantdatabasev120/global_power_plant_database.csv")
+powerplants<-read.csv("files/globalpowerplantdatabasev120/global_power_plant_database.csv")
 powerplants <- st_as_sf(powerplants, coords = c("longitude","latitude"))
 powerplants <- st_set_crs(powerplants, 4326) 
 
 #Mulligan et al. 2020 GOODD, a global dataset of more than 38,000 georeferenced dams doi:10.1038/s41597-020-0362-5
-dams<-st_read("~/GitHub/dd_forecast/files/GOODD_data/Data/GOOD2_dams.shp")
+dams<-st_read("files/GOODD_data/Data/GOOD2_dams.shp")
 dams <- st_set_crs(dams, 4326) 
 
 #Human development index (http://hdr.undp.org/sites/default/files/2020_statistical_annex_all.xlsx)
-hdi<-read_xlsx("~/GitHub/dd_forecast/files/HDI/2020_statistical_annex_all.xlsx", sheet = 3, skip=4, n_max = 200)
+hdi<-read_xlsx("files/HDI/2020_statistical_annex_all.xlsx", sheet = 3, skip=4, n_max = 200)
 hdi<-hdi[c(2,seq(3,27,2))]
 names(hdi)[2:length(hdi)]<-paste("X",names(hdi)[2:length(hdi)],sep="")
 names(hdi)[2:length(hdi)]<-gsub(names(hdi)[2:length(hdi)],pattern = "-",replacement = ".")
@@ -68,12 +68,12 @@ hdi[2:14]<-lapply(hdi[2:14],as.numeric)
 hdi<-hdi[which(hdi$Country != toupper(hdi$Country)),]
 
 #Corruption Perceptions Index 2020 (https://images.transparencycdn.org/images/CPI_FULL_DATA_2021-01-27-162209.zip)
-cpi<-read_xlsx("~/GitHub/dd_forecast/files/CPI/CPI2020_GlobalTablesTS_210125.xlsx", sheet = 2, skip=2)
+cpi<-read_xlsx("files/CPI/CPI2020_GlobalTablesTS_210125.xlsx", sheet = 2, skip=2)
 cpi<-cpi[c(1,4)]
 names(cpi)[2]<-gsub(names(cpi)[2], pattern=" ", replacement = ".")
 
 #Early et al. 2016 Global threats from invasive alien species in the twenty-first century and national response capacities (doi:10.1038/ncomms12485)
-cpd<-read_xlsx("~/GitHub/dd_forecast/files/CBD/CBDreport_summary_english_spanish_french.xlsx", sheet = 1)
+cpd<-read_xlsx("files/CBD/CBDreport_summary_english_spanish_french.xlsx", sheet = 1)
 cpd<-cpd[c(1,11,12)]
 cpd<-na.exclude(cpd)
 
@@ -424,6 +424,6 @@ data_extraction<-function(species_polygon){
 
 #example
 #getting IUCN range maps
-#pol<-st_read("~/GitHub/dd_forecast/files/range_maps/Version2020-3/AMPHIBIANS/AMPHIBIANS.shp")
+#pol<-st_read("files/range_maps/Version2020-3/AMPHIBIANS/AMPHIBIANS.shp")
 #species_polygon<-subset(pol, pol$id_no==unique(pol$id_no)[3])
 #df_extr<-data_extraction(species_polygon)

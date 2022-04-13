@@ -1,5 +1,5 @@
 # get data frames created in 2_data_extraction_batch.R for all spatial data available at IUCN
-load("~/GitHub/dd_forecast/dataframes/full_data/df_ml_v2")
+load("dataframes/full_data/df_ml_v2")
 
 # reclassify to threatened and not threatened species
 df_ml$category <- as.character(df_ml$category)
@@ -19,7 +19,7 @@ df_ml$category_group<-factor(df_ml$category_group, levels = c("not threatened",
 
 # check whether assessment needs to be updated
 # search results from https://www.iucnredlist.org/search?permalink=6cdddcbe-db29-4169-9160-0dbcc7695a29 (Version 2020-3)
-load("~/GitHub/dd_forecast/dataframes/full_data/rl_needs_update")
+load("dataframes/full_data/rl_needs_update")
 df_ml$needs_update<-"No"
 df_ml$needs_update[which(df_ml$binomial %in% rl_needs_update$scientificName)]<-"Yes"  
 
@@ -247,10 +247,10 @@ test_terr<-subset(test_terr, test_terr$needs_update=="No")
 train_df<-rbind(train_mar, train_terr)
 test_df<-rbind(test_mar, test_terr)
 
-#save(train_terr, file="~/GitHub/dd_forecast/dataframes/Partition2/train_terr_v2")
-#save(test_terr, file="~/GitHub/dd_forecast/dataframes/Partition2/test_terr_v2")
-#save(train_mar, file="~/GitHub/dd_forecast/dataframes/Partition2/train_mar_v2")
-#save(test_mar, file="~/GitHub/dd_forecast/dataframes/Partition2/test_mar_v2")
-#save(train_df, file="~/GitHub/dd_forecast/dataframes/Partition1/train_df_v2")
-#save(test_df, file="~/GitHub/dd_forecast/dataframes/Partition1/test_df_v2")
+#save(train_terr, file="dataframes/Partition2/train_terr_v2")
+#save(test_terr, file="dataframes/Partition2/test_terr_v2")
+#save(train_mar, file="dataframes/Partition2/train_mar_v2")
+#save(test_mar, file="dataframes/Partition2/test_mar_v2")
+#save(train_df, file="dataframes/Partition1/train_df_v2")
+#save(test_df, file="dataframes/Partition1/test_df_v2")
 

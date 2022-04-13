@@ -1,41 +1,43 @@
 library(h2o)
-load(file="~/GitHub/dd_forecast/dataframes/df_ml1_v2")
+
+# load data frame including all species
+load(file="dataframes/full_data/df_ml1_v2")
 # only select confirmed variables
-load("~/GitHub/dd_forecast/dataframes/Partition1/variable_selection/VarSel")
+load("dataframes/Partition1/variable_selection/VarSel")
 df_ml1<-df_ml1[which(names(df_ml1) %in% c(names(df_ml1)[c(2,7,16:25,3233:3236)],names(VarSel$finalDecision)[which(VarSel$finalDecision=="Confirmed")]))]
 
 # initialize h2o, using 4 threads and 30GB memory
 h2o.init(nthreads=4, max_mem_size="30g")
 
-# import best performing model
-#classifier <- h2o.loadModel("classifier/v2/Partition1/h2o/StackedEnsemble_AllModels_3_AutoML_1_20220406_195233")
-
-# import as MOJO:
+# import best model of partition 1 from MOJO:
 classifier <- h2o.import_mojo("classifier/v2/Partition1/MOJO/StackedEnsemble_AllModels_3_AutoML_1_20220406_195233.zip")
 
 # create frame for generating predictions
 df_ml1_h2o<-as.h2o(df_ml1)
 
+# generate predictions for all species
 preds_all <- h2o.predict(classifier, df_ml1_h2o)
 preds_all <- cbind(df_ml1[c(1:12,280:283)], as.data.frame(preds_all))
 
+# select Data Deficient species
 preds<-subset(preds_all, preds_all$category=="DD")
 
-#save(preds, file="~/GitHub/dd_forecast/dataframes/Partition1/predictions/preds_dd")
-load(file="~/GitHub/dd_forecast/dataframes/Partition1/predictions/preds_dd")
+#save(preds, file="dataframes/Partition1/predictions/preds_dd")
+load(file="dataframes/Partition1/predictions/preds_dd")
 
 # check for re-evaluated data-deficient species
 library(rredlist)
 
 # requires IUCN API access
 if(!exists("iucn_key_n")){
-  if(file.exists("~/GitHub/dd_forecast/files/iucn_key_n")){
-    load("~/GitHub/dd_forecast/files/iucn_key_n")
+  if(file.exists("files/iucn_key_n")){
+    load("files/iucn_key_n")
   } else {
     iucn_key_n <- rstudioapi::askForPassword("iucn_key_n")
   }
 }
 
+# download current RL categories for all Data Defcient species
 preds$category_new<-NA
 for (i in 1:nrow(preds)) {
   print(i)
@@ -44,22 +46,25 @@ for (i in 1:nrow(preds)) {
     preds$category_new[i]<-cats$result$code[1]
   }
 }
+
+# only select species that are not Data Deficient anymore
 preds_upd <- subset(preds, preds$category_new!="DD")
 preds_upd$category_group_new<-"threatened"
 preds_upd$category_group_new[which(preds_upd$category_new %in% c("LC","NT"))] <- "not threatened"
 preds_upd$category_new<-factor(preds_upd$category_new, levels = c("LC","NT","VU","EN","CR"))
 preds_upd$count<-1
 
-#save(preds_upd, file="~/GitHub/dd_forecast/dataframes/Partition1/predictions/preds_dd_2021_1")
-#save(preds_upd, file="~/GitHub/dd_forecast/dataframes/Partition1/predictions/preds_dd_2021_2")
-load(file="~/GitHub/dd_forecast/dataframes/Partition1/predictions/preds_dd_2021_1")
-load(file="~/GitHub/dd_forecast/dataframes/Partition1/predictions/preds_dd_2021_2")
+#save(preds_upd, file="dataframes/Partition1/predictions/preds_dd_2021_1")
+#save(preds_upd, file="dataframes/Partition1/predictions/preds_dd_2021_2")
+load(file="dataframes/Partition1/predictions/preds_dd_2021_1")
+load(file="dataframes/Partition1/predictions/preds_dd_2021_2")
 
 # generat plot for overview
 preds_upd_mar<-subset(preds_upd, tolower(preds_upd$marine)=="true")
 preds_upd_nonmar<-subset(preds_upd, tolower(preds_upd$marine)!="true")
 
 library(viridis)
+# boxplot of predicted scores per class (threatened/not threatened) for marine/non-marine species
 opar<-par()
 par(mar=c(4,4,3,0.5))
 par(mfrow=c(1,2))
@@ -72,8 +77,9 @@ plot(factor(preds_upd_nonmar$category_group), preds_upd_nonmar$threatened, cex.l
 par(opar)
 
 library(caret)
-# confusion matrix
+# confusion matrix for marine species
 confusionMatrix(factor(preds_upd_mar$predict), factor(preds_upd_mar$category_group_new))
+# confusion matrix for non-marine species
 confusionMatrix(factor(preds_upd_nonmar$predict), factor(preds_upd_nonmar$category_group_new))
+# confusion matrix for all species
 confusionMatrix(factor(preds_upd$predict), factor(preds_upd$category_group_new))
-

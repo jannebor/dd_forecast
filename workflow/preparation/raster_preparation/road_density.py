@@ -1,6 +1,8 @@
 import arcpy
 from arcpy import env
 
+#Roads.tif from https://doi.org/10.1038/sdata.2016.67
+
 # set env
 arcpy.env.workspace = "..."
 # project to wgs84

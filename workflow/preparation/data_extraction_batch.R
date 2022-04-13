@@ -3,8 +3,8 @@ library(sf)
 
 # requires IUCN API access
 if(!exists("iucn_key_n")){
-  if(file.exists("~/GitHub/dd_forecast/files/iucn_key_n")){
-    load("~/GitHub/dd_forecast/files/iucn_key_n")
+  if(file.exists("files/iucn_key_n")){
+    load("files/iucn_key_n")
   } else {
     iucn_key_n <- rstudioapi::askForPassword("iucn_key_n")
   }
@@ -13,7 +13,7 @@ if(!exists("iucn_key_n")){
 
 # IUCN range maps retrieved from https://www.iucnredlist.org/resources/spatial-data-download
 # for example: amphibians
-pol<-st_read("~/GitHub/dd_forecast/files/range_maps/Version2020-3/AMPHIBIANS/AMPHIBIANS.shp")
+pol<-st_read("files/range_maps/Version2020-3/AMPHIBIANS/AMPHIBIANS.shp")
 
 # number of cores used for parallel processing
 numCores = 4
@@ -37,7 +37,7 @@ df_ml_sub<-foreach(s = 1:iterations, .options.snow = opts, .combine = "rbind",
   #using the function created in data_extraction.R
   if(!exists("data_extraction")) {
     
-    source("~/GitHub/dd_forecast/workflow/preparation/data_extraction.R")
+    source("workflow/preparation/data_extraction.R")
     
   }
   

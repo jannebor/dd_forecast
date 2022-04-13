@@ -1,6 +1,6 @@
 library(raster)
 
-#railways: https://doi.org/10.1038/sdata.2016.67
+#railways from https://doi.org/10.1038/sdata.2016.67
 rails <- raster("Railways.tif")
 
 # generate reference raster

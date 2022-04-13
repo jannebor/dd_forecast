@@ -6,11 +6,11 @@ library(h2o)
 # PARTITION 1
 # get training and testing data created in model_prep.R
 # training data
-load(file="~/GitHub/dd_forecast/dataframes/Partition1/train_df_v2")
+load(file="dataframes/Partition1/train_df_v2")
 
 
 # testing data
-load(file="~/GitHub/dd_forecast/dataframes/Partition1/test_df_v2")
+load(file="dataframes/Partition1/test_df_v2")
 
 
 # check that species are not used for both, training & testing
@@ -20,7 +20,7 @@ which(test_df$binomial %in% train_df$binomial)
 
 
 # only select confirmed variables in training data
-load("~/GitHub/dd_forecast/dataframes/Partition1/variable_selection/VarSel")
+load("dataframes/Partition1/variable_selection/VarSel")
 train_df<-train_df[which(names(train_df) %in% c("category_group",names(VarSel$finalDecision)[which(VarSel$finalDecision=="Confirmed")]))]
 
 
@@ -72,17 +72,17 @@ PE_classifier1 <- h2o.automl(x = x, y = y,
 # Get AutoML Leaderboard
 leaderboard <- as.data.frame(PE_classifier1@leaderboard)
 leaderboard
-#save(leaderboard, file="~/GitHub/dd_forecast/classifier/v2/Partition1/leaderboard")
+#save(leaderboard, file="classifier/v2/Partition1/leaderboard")
 
 # get importance of base-learners for best performing model (if stacked ensemble)
 var_ens<-as.data.frame(h2o::h2o.varimp(PE_classifier1@leader@model$metalearner_model))
-#save(var_ens, file="~/GitHub/dd_forecast/classifier/v2/Partition1/var_ens")
+#save(var_ens, file="classifier/v2/Partition1/var_ens")
 
 # save all models
 #for(i in 1:length(grep("", leaderboard$model_id, value = TRUE))){
 #  assign("mm", h2o.getModel(grep("", leaderboard$model_id, value = TRUE)[i]))
-#  h2o.download_mojo(mm, path="~/GitHub/dd_forecast/classifier/v2/Partition1/MOJO")
-#  h2o::h2o.saveModel(mm, path="~/GitHub/dd_forecast/classifier/v2/Partition1/h2o")
+#  h2o.download_mojo(mm, path="classifier/v2/Partition1/MOJO")
+#  h2o::h2o.saveModel(mm, path="classifier/v2/Partition1/h2o")
 #}
 
 # end h2o session
