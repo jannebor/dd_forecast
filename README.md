@@ -1,10 +1,12 @@
 ## Extinction Risk of Data Deficient Species
 
-Numerous species of the IUCN Red List of Threatened Species are classified as [Data Deficient](https://www.iucnredlist.org/search?permalink=2ed13c01-7e0e-4596-a100-38ed47d30a99). This code was used to predict probabilities of being threatened by extinction for Data Deficient species containing range map data available from the IUCN [spatial data download](https://www.iucnredlist.org/resources/spatial-data-download). The classifier can be applied for individual species using our [web application](https://ml-extinctionrisk.indecol.no/) (alpha version). ![Number of threatened DD species](figs/ext_data_fig4_trp.png)
+Numerous species of the IUCN Red List of Threatened Species are classified as [Data Deficient](https://www.iucnredlist.org/search?permalink=2ed13c01-7e0e-4596-a100-38ed47d30a99). This code was used to predict probabilities of being threatened by extinction for Data Deficient species containing range map data available from the IUCN [spatial data download](https://www.iucnredlist.org/resources/spatial-data-download). The classifier can be applied for individual species using our [web application](https://ml-extinctionrisk.indecol.no/) (alpha version).
+
+![Number of threatened DD species](figs/ext_data_fig4_trp.png)
 
 ## Predictor data
 
-#### Note: The following datasets need to be downloaded individually from third-party sources for reproducing the study, otherwise continue at next step (Model preparation):
+#### Note: The following datasets need to be downloaded individually from third-party sources for reproducing the study, otherwise skip to Model preparation:
 
 -   Water scarcity footprints ([Boulay et al. 2018](https://doi.org/10.1007/s11367-017-1333-8))
 -   Freshwater connectivity indices ([Barbarossa et al. 2020](https://doi.org/10.1073/pnas.1912776117))
