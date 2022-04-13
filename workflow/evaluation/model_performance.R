@@ -43,15 +43,9 @@ library(caret)
 confusionMatrix(factor(preds_ens$predict), factor(preds_ens$category_group))
 confusionMatrix(factor(preds_ens_mar$predict), factor(preds_ens_mar$category_group))
 confusionMatrix(factor(preds_ens_nonmar$predict), factor(preds_ens_nonmar$category_group))
+
 library(viridis)
-
-# plot and save
-pngfile <- "C:/Users/janbor/Desktop/OneDrive - NTNU/ThreatLevelSubmission/figures/Figure3.png"
-png(pngfile, width=16, height=11, units = "cm", res=900)
-
 opar<-par()
-
-
 par(mar=c(4,4,3,0.5))
 par(mfrow=c(1,2))
 a<-plot(factor(preds_ens_mar$category_group), preds_ens_mar$threatened,col=inferno(5, direction = -1)[c(1,3)], main="marine species",ylab="Predicted PE score",xlab="",cex=0.4,cex.lab=0.8,cex.axis=0.7,cex.main=0.8, ylim=c(0,1))
@@ -60,11 +54,7 @@ b<-plot(factor(preds_ens_nonmar$category_group), preds_ens_nonmar$threatened, co
 mtext(paste("n = ", b$n, sep=""), side=1, at=c(1:length(b$n)),cex=0.55, font=1, padj = 5) 
 par(fig=c(0, 1, 0, 1), oma=c(0, 0, 0, 0), mar=c(4, 1, 1, 1), new=TRUE)
 plot(factor(preds_ens_nonmar$category_group), preds_ens_nonmar$threatened, cex.lab=0.8,yaxt="n",frame=F, xaxt="n",xlab="Actual IUCN assessment", ylim=c(0,0.0001))
-
 par(opar)
-dev.off()
-
-
 
 
 
