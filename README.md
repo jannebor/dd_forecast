@@ -4,7 +4,7 @@ Numerous species of the IUCN Red List of Threatened Species are classified as [D
 
 ## Predictor data
 
-#### The following datasets need to be downloaded individually from third-party sources:
+#### Note: The following datasets need to be downloaded individually from third-party sources for reproducing the study, otherwise continue at next step (Model preparation):
 
 -   Water scarcity footprints ([Boulay et al. 2018](https://doi.org/10.1007/s11367-017-1333-8))
 -   Freshwater connectivity indices ([Barbarossa et al. 2020](https://doi.org/10.1073/pnas.1912776117))
@@ -26,13 +26,15 @@ Numerous species of the IUCN Red List of Threatened Species are classified as [D
 -   Human Impacts on Marine Ecosystems ([Halpern et al. 2008](https://doi.org/10.1126/science.1149345))
 -   World Database on Protected Areas ([UNEP-WCMC & IUCN 2021](www.protectedplanet.net))
 
-Scripts for data pre-processing, e.g., calculating land-use fractions, etc., and stacking all spatial layers are stored in [workflow/preparation/raster_preparation](https://github.com/jannebor/dd_forecast/tree/main/workflow/preparation/raster_preparation)
+Scripts for data pre-processing, e.g., calculating land-use fractions, etc., and stacking all spatial layers are stored in [workflow/preparation/raster_preparation](https://github.com/jannebor/dd_forecast/tree/main/workflow/preparation/raster_preparation) and need to be adjusted individually.
+
+The underlying function for retrieving predictor data from tables, web sources (i.e., IUCN, GBIF & OBIS), and the above downloaded spatial datasets for single species is [workflow/preparation/data_extraction.R](https://github.com/jannebor/dd_forecast/blob/main/workflow/preparation/data_extraction.R). We applied this function for entire spatial datasets in [workflow/preparation/data_extraction_batch.R](https://github.com/jannebor/dd_forecast/blob/main/workflow/preparation/data_extraction_batch.R). The resulting full dataframe (df_ml_v2) is stored as R object in [dataframes/full_data](https://github.com/jannebor/dd_forecast/tree/main/dataframes/full_data).
 
 ## Model preparation
 
-The underlying function for retrieving predictor data from tables, web sources (i.e., IUCN, GBIF & OBIS), and the above downloaded spatial datasets for single species is [workflow/preparation/data_extraction.R](https://github.com/jannebor/dd_forecast/blob/main/workflow/preparation/data_extraction.R). We applied this function for entire spatial datasets in [workflow/preparation/data_extraction_batch.R](https://github.com/jannebor/dd_forecast/blob/main/workflow/preparation/data_extraction_batch.R). The resulting full dataframe (df_ml) is stored as R object in [dataframes/full_data](https://github.com/jannebor/dd_forecast/tree/main/dataframes/full_data).
+#### Full reproducibility (based on code only) is given from this point onwards:
 
-Training (75%) and testing (25%) data was prepared [workflow/preparation/model_prep.R](https://github.com/jannebor/dd_forecast/blob/main/workflow/preparation/model_prep.R) for each partition (partition 1: all species, partition 2: marine & non-marine species separately) and stored as R objects in [dataframes/Partition 1](https://github.com/jannebor/dd_forecast/tree/main/dataframes/Partition1) and [dataframes/Partition 2](https://github.com/jannebor/dd_forecast/tree/main/dataframes/Partition2). For each of the partition-specific dataframes features were selected [workflow/preparation/feature_selection.R](https://github.com/jannebor/dd_forecast/blob/main/workflow/preparation/feature_selection.R) using the Boruta algorithm [Kursa & Rudnicki 2010](https://doi.org/10.18637/jss.v036.i11). Only relevant features were considered during model building.
+Training (75%) and testing (25%) data was prepared ([workflow/preparation/model_prep.R](https://github.com/jannebor/dd_forecast/blob/main/workflow/preparation/model_prep.R)) for each partition (partition 1: all species, partition 2: marine & non-marine species separately) and stored as R objects in [dataframes/Partition 1](https://github.com/jannebor/dd_forecast/tree/main/dataframes/Partition1) and [dataframes/Partition 2](https://github.com/jannebor/dd_forecast/tree/main/dataframes/Partition2). For each of the partition-specific dataframes features were selected ([workflow/preparation/feature_selection.R](https://github.com/jannebor/dd_forecast/blob/main/workflow/preparation/feature_selection.R)) using the Boruta algorithm ([Kursa & Rudnicki 2010](https://doi.org/10.18637/jss.v036.i11)). Only relevant features were considered during model building.
 
 ## Model building
 
@@ -48,17 +50,19 @@ In total 510 models were fitted using [AutoML](https://docs.h2o.ai/h2o/latest-st
 
 ## Model evaluation
 
-Permutation variable importance was calculated by measuring performance loss before and after a feature was permuted ([workflow/evaluation/variable_importance.R](https://github.com/jannebor/dd_forecast/blob/main/workflow/evaluation/variable_importance.R)). Performance metrics were calculated based on the testing data ([workflow/evaluation/model_performance.R](https://github.com/jannebor/dd_forecast/blob/main/workflow/evaluation/model_performance.R)) and based on reclassified Data Deficient species ([workflow/evaluation/dd_performance.R](https://github.com/jannebor/dd_forecast/blob/main/workflow/evaluation/dd_performance.R). ![Permutation variable importance](figs/ext_data_fig8_trp.png)
+Performance metrics were calculated based on the testing data ([workflow/evaluation/model_performance.R](https://github.com/jannebor/dd_forecast/blob/main/workflow/evaluation/model_performance.R)) and based on reclassified Data Deficient species ([workflow/evaluation/dd_performance.R](https://github.com/jannebor/dd_forecast/blob/main/workflow/evaluation/dd_performance.R)). Permutation variable importance was calculated by measuring performance loss before and after a feature was permuted ([workflow/evaluation/variable_importance.R](https://github.com/jannebor/dd_forecast/blob/main/workflow/evaluation/variable_importance.R)).
+
+![Permutation variable importance](figs/ext_data_fig8_trp.png)
 
 ## Predictions
 
 The generated predictions for Data Deficient species are stored in [dd_predictions.csv](https://github.com/jannebor/dd_forecast/blob/main/dataframes/Partition1/predictions/dd_predictions.csv) and show the probability of being threatened by extinction for each species:
 
 | Species                   | Last Assessed | Taxonomic class | Red List Category | Probability of being threatened |
-|---------------------------|---------------|-----------------|-------------------|--------------------|
-| Chirostoma grandocule     | 2018          | Actinopterygii  | Data Deficient    | 95.8%              |
-| Sarcohyla miahuatlanensis | 2019          | Amphibia        | Data Deficient    | 95.8%              |
-| Crossodactylus dantei     | 2008          | Amphibia        | Data Deficient    | 95.4%              |
-| Nyctibatrachus sholai     | 2008          | Amphibia        | Data Deficient    | 95.2%              |
-| Colostethus alacris       | 2016          | Amphibia        | Data Deficient    | 95.2%              |
-| …                         |               |                 |                   |                    |
+|---------------------------|---------------|-----------------|-------------------|---------------------------------|
+| Chirostoma grandocule     | 2018          | Actinopterygii  | Data Deficient    | 95.8%                           |
+| Sarcohyla miahuatlanensis | 2019          | Amphibia        | Data Deficient    | 95.8%                           |
+| Crossodactylus dantei     | 2008          | Amphibia        | Data Deficient    | 95.4%                           |
+| Nyctibatrachus sholai     | 2008          | Amphibia        | Data Deficient    | 95.2%                           |
+| Colostethus alacris       | 2016          | Amphibia        | Data Deficient    | 95.2%                           |
+| …                         |               |                 |                   |                                 |
