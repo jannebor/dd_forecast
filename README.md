@@ -2,7 +2,7 @@
 
 Numerous species of the IUCN Red List of Threatened Species are classified as [Data Deficient](https://www.iucnredlist.org/search?permalink=2ed13c01-7e0e-4596-a100-38ed47d30a99). This code was used to predict probabilities of being threatened by extinction for Data Deficient species containing range map data available from the IUCN [spatial data download](https://www.iucnredlist.org/resources/spatial-data-download). The classifier can be applied for individual species using our [web application](https://ml-extinctionrisk.indecol.no/) (alpha version).
 
-![Number of threatened DD species](figs/ext_data_fig4_trp.png)
+![Number of threatened DD species](https://github.com/jannebor/dd_forecast/raw/main/figs/ext_data_fig4_trp.png)
 
 ## Predictor data
 
@@ -54,7 +54,7 @@ In total 510 models were fitted using [AutoML](https://docs.h2o.ai/h2o/latest-st
 
 Performance metrics were calculated based on the testing data ([workflow/evaluation/model_performance.R](https://github.com/jannebor/dd_forecast/blob/main/workflow/evaluation/model_performance.R)) and based on reclassified Data Deficient species ([workflow/evaluation/dd_performance.R](https://github.com/jannebor/dd_forecast/blob/main/workflow/evaluation/dd_performance.R)). Permutation variable importance was calculated by measuring performance loss before and after a feature was permuted ([workflow/evaluation/variable_importance.R](https://github.com/jannebor/dd_forecast/blob/main/workflow/evaluation/variable_importance.R)).
 
-![Permutation variable importance](figs/ext_data_fig8_trp.png)
+![Permutation variable importance](https://github.com/jannebor/dd_forecast/raw/main/figs/ext_data_fig8_trp.png)
 
 ## Predictions
 
